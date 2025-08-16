@@ -1,104 +1,108 @@
-// components/InputField/InputField.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface InputFieldProps {
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string | null;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear?: () => void;
   label?: string;
   placeholder?: string;
   helperText?: string;
   errorMessage?: string;
-  disabled?: boolean;
   invalid?: boolean;
+  disabled?: boolean;
   loading?: boolean;
-  variant?: 'filled' | 'outlined' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  showClear?: boolean;
+  variant?: "filled" | "outlined" | "ghost";
+  size?: "sm" | "md" | "lg";
   passwordToggle?: boolean;
-  theme?: 'light' | 'dark';
+  theme?: "light" | "dark";
+  showClear?: boolean;
 }
 
 const InputField: React.FC<InputFieldProps> = ({
-  value = '',
+  value,
   onChange,
+  onClear,
   label,
   placeholder,
   helperText,
   errorMessage,
-  disabled = false,
-  invalid = false,
+  invalid,
+  disabled,
   loading = false,
-  variant = 'outlined',
-  size = 'md',
-  showClear = false,
+  variant = "outlined",
+  size = "md",
   passwordToggle = false,
-  theme = 'light',
+  showClear = false,
+  theme = "light",
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [internalValue, setInternalValue] = useState(value);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (onChange) {
-      onChange(e);
-    } else {
-      setInternalValue(e.target.value);
-    }
-  };
+  const variantClasses =
+    variant === "outlined"
+      ? "border"
+      : variant === "filled"
+      ? "bg-gray-100 border"
+      : "border-0 bg-transparent";
 
-  const baseClasses = `w-full border rounded px-3 focus:outline-none transition-all`;
   const sizeClasses =
-    size === 'sm' ? 'py-1 text-sm' :
-    size === 'lg' ? 'py-3 text-lg' : 'py-2 text-md';
-
-  const variantClasses = variant === 'filled'
-    ? 'bg-gray-100 border-gray-300'
-    : variant === 'ghost'
-      ? 'bg-transparent border-transparent'
-      : 'bg-white border-gray-300';
-
-  const stateClasses = `
-    ${invalid ? 'border-red-500' : ''}
-    ${disabled ? 'bg-gray-200 cursor-not-allowed' : ''}
-  `;
-
-  const themeClasses = theme === 'dark'
-    ? 'text-white bg-gray-800 border-gray-700 placeholder-gray-400'
-    : '';
+    size === "sm" ? "px-2 py-1 text-sm" : size === "lg" ? "px-4 py-3 text-lg" : "px-3 py-2 text-base";
 
   return (
-    <div className="flex flex-col gap-1 w-full">
-      {label && <label className="font-medium">{label}</label>}
-      <div className="relative flex items-center w-full">
+    <div className={`flex flex-col gap-1 w-full ${theme === "dark" ? "text-white" : "text-black"}`}>
+      {label && <label className="text-sm font-medium">{label}</label>}
+
+      <div className="relative flex items-center">
         <input
-          type={passwordToggle && !showPassword ? 'password' : 'text'}
-          value={onChange ? value : internalValue}
-          onChange={handleChange}
+          type={passwordToggle && !showPassword ? "password" : "text"}
+          value={value ?? ""}
+          onChange={onChange}
           placeholder={placeholder}
           disabled={disabled || loading}
-          className={`${baseClasses} ${sizeClasses} ${variantClasses} ${stateClasses} ${themeClasses}`}
+          className={`w-full rounded ${variantClasses} ${sizeClasses} ${
+            invalid ? "border-red-500" : "border-gray-300"
+          } ${loading ? "bg-gray-100 animate-pulse" : ""} ${
+            disabled ? "cursor-not-allowed bg-gray-200" : "cursor-text"
+          }`}
         />
-        {showClear && (onChange ? value : internalValue) && !disabled && !loading && (
+
+        {/* Cross sign inside input */}
+        {showClear && onClear && value && (
           <button
             type="button"
-            onClick={() => setInternalValue('')}
-            className="absolute right-2 text-gray-500 hover:text-gray-700"
+            onClick={onClear}
+            disabled={disabled}
+            className={`absolute right-2 ${
+              disabled ? "cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-500 hover:text-black"
+            }`}
           >
             ✕
           </button>
         )}
+
+        {/* Password Toggle */}
         {passwordToggle && (
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-8 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowPassword(prev => !prev)}
+            disabled={disabled}
+            className={`absolute right-${showClear ? "8" : "2"} ${
+              disabled ? "cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-500 hover:text-black"
+            }`}
           >
-            {showPassword ? '🙈' : '👁️'}
+            {showPassword ? "🙈" : "👁️"}
           </button>
         )}
-        {loading && <div className="absolute right-2 animate-spin">⏳</div>}
+
+        {/* Loading Indicator */}
+        {loading && (
+          <span className="absolute right-10 text-gray-500 animate-spin">⏳</span>
+        )}
       </div>
-      {helperText && !invalid && <p className="text-gray-500 text-sm">{helperText}</p>}
-      {invalid && errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+
+      {helperText && !errorMessage && (
+        <span className="text-xs text-gray-500">{helperText}</span>
+      )}
+      {errorMessage && <span className="text-xs text-red-500">{errorMessage}</span>}
     </div>
   );
 };

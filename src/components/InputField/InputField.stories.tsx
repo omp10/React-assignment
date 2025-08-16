@@ -1,8 +1,7 @@
-import React from "react";
 import InputField from "./InputField";
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
-const meta: Meta<typeof InputField> = {
+const meta = {
   title: "Components/InputField",
   component: InputField,
   argTypes: {
@@ -14,13 +13,20 @@ const meta: Meta<typeof InputField> = {
     disabled: { control: "boolean" },
     invalid: { control: "boolean" },
     loading: { control: "boolean" },
-    variant: { control: { type: "select", options: ["filled", "outlined", "ghost"] } },
-    size: { control: { type: "select", options: ["sm", "md", "lg"] } },
+    variant: {
+      control: { type: "select", options: ["filled", "outlined", "ghost"] },
+    },
+    size: {
+      control: { type: "select", options: ["sm", "md", "lg"] },
+    },
     showClear: { control: "boolean" },
     passwordToggle: { control: "boolean" },
-    theme: { control: { type: "select", options: ["light", "dark"] } },
+    theme: {
+      control: { type: "select", options: ["light", "dark"] },
+    },
   },
-};
+} satisfies Meta<typeof InputField>;
+
 export default meta;
 
 type Story = StoryObj<typeof InputField>;
@@ -54,7 +60,7 @@ export const ErrorState: Story = {
 export const Disabled: Story = {
   args: {
     label: "Username",
-    placeholder: "Can't edit",
+    placeholder: "Can&apos;t edit", // escaped apostrophe
     disabled: true,
     variant: "outlined",
     size: "md",
@@ -80,6 +86,18 @@ export const PasswordField: Story = {
     label: "Password",
     placeholder: "Enter password",
     passwordToggle: true,
+    variant: "outlined",
+    size: "md",
+    theme: "light",
+  },
+};
+
+// Clear Button
+export const WithClear: Story = {
+  args: {
+    label: "Search",
+    placeholder: "Type something...",
+    showClear: true,
     variant: "outlined",
     size: "md",
     theme: "light",
