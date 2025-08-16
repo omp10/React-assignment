@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, ReactNode } from "react";
 
 export interface Column<T> {
   key: keyof T;
@@ -11,6 +11,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   theme?: "light" | "dark";
+  selectable?: boolean;
   onRowSelect?: (selectedRows: T[]) => void;
 }
 
@@ -20,6 +21,7 @@ export const DataTable = <T extends { id: string | number }>({
   loading = false,
   emptyMessage = "No data available",
   theme = "light",
+  selectable = false,
   onRowSelect,
 }: DataTableProps<T>) => {
   const [selectedRows, setSelectedRows] = useState<T[]>([]);
@@ -54,6 +56,17 @@ export const DataTable = <T extends { id: string | number }>({
   const headerBg = theme === "dark" ? "bg-gray-700" : "bg-gray-100";
   const rowHover = theme === "dark" ? "hover:bg-gray-600" : "hover:bg-gray-200";
 
+  // 🔥 Safe render helper
+  const renderCell = (value: unknown): ReactNode => {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return value.toString();
+    }
+    if (React.isValidElement(value)) {
+      return value;
+    }
+    return JSON.stringify(value);
+  };
+
   return (
     <div className={`w-full overflow-x-auto border rounded p-2 ${tableBg}`}>
       {loading ? (
@@ -64,7 +77,7 @@ export const DataTable = <T extends { id: string | number }>({
         <table className="w-full border-collapse">
           <thead className={headerBg}>
             <tr>
-              <th className="px-4 py-2">Select</th>
+              {selectable && <th className="px-4 py-2">Select</th>}
               {columns.map(col => (
                 <th
                   key={String(col.key)}
@@ -79,17 +92,19 @@ export const DataTable = <T extends { id: string | number }>({
           <tbody>
             {sortedData.map(row => (
               <tr key={row.id} className={rowHover}>
-                <td className="px-4 py-2 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.some(r => r.id === row.id)}
-                    onChange={e => handleRowSelect(row, e.target.checked)}
-                    className="cursor-pointer"
-                  />
-                </td>
+                {selectable && (
+                  <td className="px-4 py-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.some(r => r.id === row.id)}
+                      onChange={e => handleRowSelect(row, e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                  </td>
+                )}
                 {columns.map(col => (
                   <td key={String(col.key)} className="px-4 py-2">
-                    {row[col.key]}
+                    {renderCell(row[col.key])}
                   </td>
                 ))}
               </tr>

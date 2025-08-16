@@ -5,7 +5,7 @@ import DataTablePlayground from "@/components/DataTable/DataTablePlayground";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState<"input" | "table">("input");
-  const [theme, setTheme] = useState<"light" | "dark">("light"); // global theme
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
 
@@ -51,7 +51,7 @@ export default function Page() {
       {/* Active Component */}
       <div className="flex flex-col items-center justify-center w-full max-w-4xl">
         {activeTab === "input" && <InputFieldPlayground theme={theme} />}
-        {activeTab === "table" && <DataTablePlayground />}
+        {activeTab === "table" && <DataTablePlayground theme={theme} />}
       </div>
     </div>
   );

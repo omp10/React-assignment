@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { DataTable, Column } from "./DataTable";
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+
 
 interface User {
   id: number;
@@ -35,12 +36,12 @@ export const Default: Story = {
     const [selectedRows, setSelectedRows] = useState<User[]>([]);
 
     const addUser = () => {
-      const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
+      const nextId = data.length ? Math.max(...data.map((d) => d.id)) + 1 : 1;
       setData([...data, { id: nextId, name: `User ${nextId}`, age: 20 }]);
     };
 
     const deleteSelected = () => {
-      setData(data.filter(d => !selectedRows.includes(d)));
+      setData(data.filter((d) => !selectedRows.includes(d)));
       setSelectedRows([]);
     };
 
@@ -80,5 +81,7 @@ export const Loading: Story = {
 
 // Empty State
 export const Empty: Story = {
-  render: () => <DataTable data={[]} columns={columns} emptyMessage="No users found!" />,
+  render: () => (
+    <DataTable data={[]} columns={columns} emptyMessage="No users found!" />
+  ),
 };

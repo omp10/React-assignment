@@ -8,14 +8,18 @@ interface User {
   age: number;
 }
 
-const DataTablePlayground: React.FC = () => {
+interface DataTablePlaygroundProps {
+  theme?: "light" | "dark";
+}
+
+const DataTablePlayground: React.FC<DataTablePlaygroundProps> = ({ theme = "light" }) => {
   const [data, setData] = useState<User[]>([
     { id: 1, name: "Alice", age: 25 },
     { id: 2, name: "Bob", age: 30 },
     { id: 3, name: "Charlie", age: 22 },
   ]);
   const [loading, setLoading] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState<string>("");
   const [newAge, setNewAge] = useState<number | "">("");
   const [selectedRows, setSelectedRows] = useState<User[]>([]);
 
@@ -28,46 +32,59 @@ const DataTablePlayground: React.FC = () => {
   const addUser = () => {
     if (!newName || newAge === "") return;
     const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
-    setData([...data, { id: nextId, name: newName, age: Number(newAge) }]);
+
+    const newUser: User = {
+      id: nextId,
+      name: newName.trim(),
+      age: Number(newAge),
+    };
+
+    setData(prev => [...prev, newUser]);
     setNewName("");
     setNewAge("");
   };
 
   const deleteSelectedUsers = () => {
-    setData(prev => prev.filter(row => !selectedRows.some(sel => sel.id === row.id)));
+    setData(prev =>
+      prev.filter(row => !selectedRows.some(sel => sel.id === row.id))
+    );
     setSelectedRows([]);
   };
 
- const sortColumn = (key: keyof User) => {
-  const sorted = [...data].sort((a, b) => {
-    if (key === "id") {
-      return a.id - b.id; // always ascending for User ID
-    }
-    if (a[key] < b[key]) return -1;
-    if (a[key] > b[key]) return 1;
-    return 0;
-  });
-  setData(sorted);
-};
+  const sortColumn = (key: keyof User) => {
+    const sorted = [...data].sort((a, b) => {
+      const aVal = a[key];
+      const bVal = b[key];
 
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return aVal - bVal;
+      }
+      return String(aVal).localeCompare(String(bVal));
+    });
+    setData(sorted);
+  };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div
+      className={`flex flex-col gap-4 w-full p-4 rounded-xl shadow-md transition-colors ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      }`}
+    >
       {/* Action Buttons above table */}
       <div className="flex flex-wrap gap-2 mb-2 items-center">
         {columns.map(col => (
           <button
             key={col.key}
-            onClick={() => sortColumn(col.key as keyof User)}
-            className="px-2 py-1 bg-blue-500 text-white rounded-xl cursor-pointer"
+            onClick={() => sortColumn(col.key)}
+            className="px-2 py-1 bg-blue-500 text-white rounded-xl cursor-pointer hover:bg-blue-600 transition"
           >
             Sort {col.label}
           </button>
         ))}
 
         <button
-          onClick={() => setLoading(!loading)}
-          className="px-2 py-1 bg-yellow-500 text-white rounded-xl cursor-pointer"
+          onClick={() => setLoading(prev => !prev)}
+          className="px-2 py-1 bg-yellow-500 text-white rounded-xl cursor-pointer hover:bg-yellow-600 transition"
         >
           Toggle Loading
         </button>
@@ -88,25 +105,29 @@ const DataTablePlayground: React.FC = () => {
           type="text"
           placeholder="Name"
           value={newName}
-          onChange={e => setNewName(e.target.value)}
-          className="px-2 py-1 border rounded"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setNewName(e.target.value)
+          }
+          className="px-2 py-1 border rounded w-32 text-black"
         />
         <input
           type="number"
           placeholder="Age"
           value={newAge}
-          onChange={e => setNewAge(e.target.value === "" ? "" : Number(e.target.value))}
-          className="px-2 py-1 border rounded w-20"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setNewAge(e.target.value === "" ? "" : Number(e.target.value))
+          }
+          className="px-2 py-1 border rounded w-20 text-black"
         />
         <button
           onClick={addUser}
-          className="px-2 py-1 bg-green-500 text-white rounded-xl cursor-pointer"
+          className="px-2 py-1 bg-green-500 text-white rounded-xl cursor-pointer hover:bg-green-600 transition"
         >
           Add User
         </button>
         <button
           onClick={deleteSelectedUsers}
-          className="px-2 py-1 bg-red-500 text-white rounded-xl cursor-pointer"
+          className="px-2 py-1 bg-red-500 text-white rounded-xl cursor-pointer hover:bg-red-600 transition"
         >
           Delete Selected Users
         </button>
