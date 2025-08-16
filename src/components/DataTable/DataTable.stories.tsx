@@ -1,34 +1,84 @@
-import React from "react";
-import { Meta, Story } from "@storybook/react";
-import DataTable from "./DataTable";
-import { DataTableProps, Column } from "./DataTable.types";
+import React, { useState } from "react";
+import { DataTable, Column } from "./DataTable";
+import { Meta, StoryObj } from "@storybook/react";
 
 interface User {
   id: number;
   name: string;
-  email: string;
+  age: number;
 }
 
-const columns: Column<User>[] = [
-  { key: "id", title: "ID", sortable: true },
-  { key: "name", title: "Name", sortable: true },
-  { key: "email", title: "Email" },
-];
-
-const data: User[] = [
-  { id: 1, name: "Alice", email: "alice@mail.com" },
-  { id: 2, name: "Bob", email: "bob@mail.com" },
-];
-
-export default {
+const meta: Meta<typeof DataTable> = {
   title: "Components/DataTable",
   component: DataTable,
-} as Meta;
+};
+export default meta;
 
-const Template: Story<DataTableProps<User>> = (args) => <DataTable {...args} />;
+type Story = StoryObj<typeof DataTable>;
 
-export const Default = Template.bind({});
-Default.args = { data, columns };
+const sampleData: User[] = [
+  { id: 1, name: "Alice", age: 25 },
+  { id: 2, name: "Bob", age: 30 },
+  { id: 3, name: "Charlie", age: 22 },
+];
 
-export const Selectable = Template.bind({});
-Selectable.args = { data, columns, selectable: true };
+const columns: Column<User>[] = [
+  { key: "id", label: "User ID" },
+  { key: "name", label: "Name" },
+  { key: "age", label: "Age" },
+];
+
+// Default Table
+export const Default: Story = {
+  render: () => {
+    const [data, setData] = useState<User[]>(sampleData);
+    const [selectedRows, setSelectedRows] = useState<User[]>([]);
+
+    const addUser = () => {
+      const nextId = data.length ? Math.max(...data.map(d => d.id)) + 1 : 1;
+      setData([...data, { id: nextId, name: `User ${nextId}`, age: 20 }]);
+    };
+
+    const deleteSelected = () => {
+      setData(data.filter(d => !selectedRows.includes(d)));
+      setSelectedRows([]);
+    };
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <button
+            className="px-2 py-1 bg-green-500 text-white rounded cursor-pointer"
+            onClick={addUser}
+          >
+            Add User
+          </button>
+          <button
+            className="px-2 py-1 bg-red-500 text-white rounded cursor-pointer"
+            onClick={deleteSelected}
+            disabled={selectedRows.length === 0}
+          >
+            Delete Selected
+          </button>
+        </div>
+        <DataTable
+          data={data}
+          columns={columns}
+          selectable
+          onRowSelect={setSelectedRows}
+          loading={false}
+        />
+      </div>
+    );
+  },
+};
+
+// Loading State
+export const Loading: Story = {
+  render: () => <DataTable data={[]} columns={columns} loading />,
+};
+
+// Empty State
+export const Empty: Story = {
+  render: () => <DataTable data={[]} columns={columns} emptyMessage="No users found!" />,
+};
